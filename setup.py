@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from setuptools import find_packages, setup
-from djcms_markdown import __version__
+from dj_markdown import __version__
 
 try:
     long_description = open('README.rst').read()
