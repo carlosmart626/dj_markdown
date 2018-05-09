@@ -1,6 +1,6 @@
 # dj_markdown
 
-Work in progress
+Work in progress...
 
 Examples:
 ```
