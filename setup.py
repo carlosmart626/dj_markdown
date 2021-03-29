@@ -16,7 +16,7 @@ except:
 
 REQUIREMENTS = [
     'mistune==0.8.3',
-    'Pygments==2.2.0',
+    'Pygments==2.7.4',
 ]
 TEST_REQUIRED = [
     'flake8',
