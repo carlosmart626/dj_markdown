@@ -15,7 +15,7 @@ except:
 
 
 REQUIREMENTS = [
-    'mistune==0.8.3',
+    'mistune==2.0.3',
     'Pygments==2.2.0',
 ]
 TEST_REQUIRED = [
