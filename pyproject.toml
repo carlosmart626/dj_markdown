@@ -55,3 +55,6 @@ dj_markdown = [
     "templates/**/*",
     "locale/**/*",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
