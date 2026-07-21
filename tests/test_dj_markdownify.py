@@ -82,3 +82,10 @@ def test_filters_and_tags_work_from_a_template():
     assert rendered.count("<h1>Hi</h1>") == 2
     assert "monokai.css" in rendered
     assert "MathJax.js" in rendered
+
+
+def test_markdown_code_unknown_language_falls_back_to_plain_code():
+    rendered = markdown_code("```notalanguage\nx < 1 & y > 2\n```")
+    assert "<pre><code>" in rendered
+    assert "&lt; 1 &amp; y &gt; 2" in rendered
+    assert "highlight" not in rendered
