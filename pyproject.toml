@@ -1,5 +1,7 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+# >=64 so the recursive "**" globs in [tool.setuptools.package-data] are
+# handled reliably (recursive glob support landed in setuptools 62.3).
+requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -53,8 +55,6 @@ include = ["dj_markdown*"]
 [tool.setuptools.package-data]
 dj_markdown = [
     "static/**/*",
-    "templates/**/*",
-    "locale/**/*",
 ]
 
 [tool.pytest.ini_options]
