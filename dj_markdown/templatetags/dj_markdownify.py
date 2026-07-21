@@ -3,7 +3,7 @@ import mistune
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
-from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.templatetags.static import static
 
 register = template.Library()
 
@@ -89,8 +89,9 @@ CODE_THEMES = [
 ]
 
 
-class HighlightRenderer(mistune.Renderer):
-    def block_code(self, code, lang):
+class HighlightRenderer(mistune.HTMLRenderer):
+    def block_code(self, code, info=None):
+        lang = info.strip().split(None, 1)[0] if info and info.strip() else None
         if not lang:
             return '\n<pre><code>%s</code></pre>\n' % \
                 mistune.escape(code)
@@ -102,13 +103,13 @@ class HighlightRenderer(mistune.Renderer):
 @register.filter
 def markdown_code(value):
     renderer = HighlightRenderer()
-    markdown = mistune.Markdown(renderer=renderer)
+    markdown = mistune.create_markdown(renderer=renderer)
     return markdown(value)
 
 
 @register.filter
 def markdown(value):
-    markdown = mistune.Markdown()
+    markdown = mistune.create_markdown()
     return markdown(value)
 
 
