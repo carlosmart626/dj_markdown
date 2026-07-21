@@ -146,4 +146,7 @@ def markdown_code_js_init():
 
 @register.simple_tag
 def markdown_math():
-    return "<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>"
+    return (
+        "<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/"
+        "MathJax.js?config=TeX-MML-AM_CHTML' async></script>"
+    )
