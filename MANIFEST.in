@@ -1,0 +1,10 @@
+include LICENSE
+include README.md
+include tox.ini
+
+# setuptools' legacy auto-include only picks up test*.py, which leaves the
+# sdist without conftest.py/settings.py and therefore unable to run its own
+# test suite. Ship the whole tests package instead.
+recursive-include tests *.py
+
+recursive-include dj_markdown/static *
