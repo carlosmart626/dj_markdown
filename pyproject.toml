@@ -12,6 +12,7 @@ authors = [{ name = "Carlos Martínez", email = "carlosmart626@gmail.com" }]
 keywords = ["django", "markdown", "templatetags", "code", "highlight"]
 dynamic = ["version"]
 dependencies = [
+    "Django>=5.2",
     "mistune>=3.0",
     "Pygments>=2.17",
 ]
