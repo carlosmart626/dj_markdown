@@ -1,0 +1,73 @@
+name: Test
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        django-version: ["5.2"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "Django~=${{ matrix.django-version }}.0" flake8 pytest
+          python -m pip install -e .
+      - name: Lint with flake8
+        run: flake8 .
+      - name: Run tests
+        run: pytest -v
+
+  # The editable install above never exercises the built artifacts, so
+  # packaging regressions (e.g. the 79 bundled CSS themes going missing)
+  # would not be caught. Build the real wheel and sdist and test those.
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheel and sdist
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build
+      - name: Install and test the built wheel
+        run: |
+          python -m venv /tmp/wheel-env
+          /tmp/wheel-env/bin/pip install dist/*.whl pytest
+          mkdir -p /tmp/wheel-test
+          cp -r tests /tmp/wheel-test/
+          cd /tmp/wheel-test && /tmp/wheel-env/bin/pytest tests -v
+      - name: Verify static assets are bundled in the wheel
+        run: |
+          /tmp/wheel-env/bin/python - <<'PY'
+          import pathlib
+          import dj_markdown
+          styles = pathlib.Path(dj_markdown.__file__).parent / \
+              "static/dj_markdown/css/styles"
+          css = sorted(styles.glob("*.css"))
+          print(f"bundled css themes: {len(css)}")
+          assert len(css) >= 79, f"expected >=79 CSS themes, found {len(css)}"
+          js = pathlib.Path(dj_markdown.__file__).parent / \
+              "static/dj_markdown/js/highlight.js"
+          assert js.is_file(), "highlight.js missing from the wheel"
+          PY
+      - name: Unpack the sdist and run its tests
+        run: |
+          mkdir -p /tmp/sdist-test
+          tar xzf dist/*.tar.gz -C /tmp/sdist-test --strip-components=1
+          python -m venv /tmp/sdist-env
+          /tmp/sdist-env/bin/pip install "/tmp/sdist-test[test]"
+          cd /tmp/sdist-test && /tmp/sdist-env/bin/pytest -v

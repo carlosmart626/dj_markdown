@@ -3,7 +3,8 @@ import mistune
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
-from django.contrib.staticfiles.templatetags.staticfiles import static
+from pygments.util import ClassNotFound
+from django.templatetags.static import static
 
 register = template.Library()
 
@@ -89,26 +90,33 @@ CODE_THEMES = [
 ]
 
 
-class HighlightRenderer(mistune.Renderer):
-    def block_code(self, code, lang):
-        if not lang:
-            return '\n<pre><code>%s</code></pre>\n' % \
-                mistune.escape(code)
-        lexer = get_lexer_by_name(lang, stripall=True)
-        formatter = HtmlFormatter()
-        return highlight(code, lexer, formatter)
+class HighlightRenderer(mistune.HTMLRenderer):
+    def block_code(self, code, info=None):
+        lang = info.strip().split(None, 1)[0] if info and info.strip() else None
+        if lang:
+            try:
+                lexer = get_lexer_by_name(lang, stripall=True)
+            except ClassNotFound:
+                # Unknown fence language: fall back to plain escaped code
+                # instead of letting pygments raise and break the render.
+                lexer = None
+            if lexer is not None:
+                formatter = HtmlFormatter()
+                return highlight(code, lexer, formatter)
+        return '\n<pre><code>%s</code></pre>\n' % \
+            mistune.escape(code)
 
 
 @register.filter
 def markdown_code(value):
     renderer = HighlightRenderer()
-    markdown = mistune.Markdown(renderer=renderer)
+    markdown = mistune.create_markdown(renderer=renderer)
     return markdown(value)
 
 
 @register.filter
 def markdown(value):
-    markdown = mistune.Markdown()
+    markdown = mistune.create_markdown()
     return markdown(value)
 
 
@@ -145,4 +153,7 @@ def markdown_code_js_init():
 
 @register.simple_tag
 def markdown_math():
-    return "<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>"
+    return (
+        "<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/"
+        "MathJax.js?config=TeX-MML-AM_CHTML' async></script>"
+    )
